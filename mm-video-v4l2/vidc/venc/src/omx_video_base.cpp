@@ -1097,10 +1097,10 @@ OMX_ERRORTYPE  omx_video::send_command_proxy(OMX_IN OMX_HANDLETYPE hComp,
     /* Current State is Invalid */
     /*******************************/
     else if (m_state == OMX_StateInvalid) {
-        /* State Transition from Inavlid to any state */
-        if (eState == (OMX_StateLoaded || OMX_StateWaitForResources
-                    || OMX_StateIdle || OMX_StateExecuting
-                    || OMX_StatePause || OMX_StateInvalid)) {
+        /* State Transition from Invalid to any state */
+        if (eState == OMX_StateLoaded || eState == OMX_StateWaitForResources ||
+            eState == OMX_StateIdle || eState == OMX_StateExecuting ||
+            eState == OMX_StatePause || eState == OMX_StateInvalid) {
             DEBUG_PRINT_ERROR("ERROR: OMXCORE-SM: Invalid -->Loaded");
             post_event(OMX_EventError,OMX_ErrorInvalidState,\
                     OMX_COMPONENT_GENERATE_EVENT);
@@ -2130,6 +2130,28 @@ OMX_ERRORTYPE  omx_video::get_parameter(OMX_IN OMX_HANDLETYPE     hComp,
                     eRet = OMX_ErrorHardware;
                 }
                 pParam->bDisable = pq_status ? OMX_FALSE : OMX_TRUE;
+                break;
+            }
+        case OMX_IndexParamConsumerUsageBits:
+            {
+                OMX_U32 *pParam = reinterpret_cast<OMX_U32 *>(paramData);
+
+                DEBUG_PRINT_HIGH("%s:%s: OMX_IndexParamConsumerUsageBits",__FILE__,__FUNCTION__);
+
+                if (pParam)
+                {
+                   *pParam = GRALLOC_USAGE_HW_VIDEO_ENCODER;
+                   if (secure_session)
+                     *pParam |= GRALLOC_USAGE_PROTECTED;
+
+                   DEBUG_PRINT_HIGH("Usage Bits = 0x%x", *pParam);
+                }
+                else
+                {
+                  DEBUG_PRINT_ERROR("%s:%s: OMX_IndexParamConsumerUsageBits: null ptr param passed",
+                    __FILE__,__FUNCTION__);
+                  eRet = OMX_ErrorBadParameter;
+                }
                 break;
             }
         default:
